@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026 — Anastasia's Calendar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --pkg-anastasia-bg: #ccfbf1; /* Soft Turquoise / Teal theme */
+            --pkg-anastasia-text: #0f766e; 
+        }
+        body {
+            background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
+            color: #134e4a;
+            min-height: 100vh;
+        }
+        .pkg-anastasia { 
+            background-color: var(--pkg-anastasia-bg); 
+            color: var(--pkg-anastasia-text); 
+            font-weight: 700; 
+        }
+        .weekend {
+            background-color: #fff1f2;
+            color: #e11d48;
+        }
+        .other-month {
+            color: #94a3b8;
+            font-weight: 400;
+        }
+        /* Anastasia's exact lesson indicator (Tuesday & Friday) */
+        .anastasia-lesson {
+            box-shadow: inset 0 0 0 2px #0d9488;
+            font-weight: 800 !important;
+            position: relative;
+        }
+        .anastasia-lesson::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 5px;
+            height: 5px;
+            background-color: #0d9488;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 font-sans antialiased">
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-8 text-center flex flex-col items-center justify-center gap-3">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-teal-600 text-white font-extrabold rounded-full text-sm shadow-md shadow-teal-600/20 tracking-wider">
+                <span>2026</span>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-teal-950 tracking-tight">Anastasia's Calendar</h1>
+        </header>
+
+        <main>
+            <div id="calendarGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+        </main>
+
+        <footer class="mt-12 text-center text-xs font-medium text-teal-700/70">
+            © 2026 Anastasia's Calendar • English Lessons Schedule
+        </footer>
+    </div>
+
+    <script>
+        const year = 2026;
+        const months = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+        const weekDays = ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
+
+        // Package Anastasia: Oct 13 -> Nov 6 (20 calendar days duration, 8 lessons on Tue & Fri)
+        const anastasiaPackageDays = [
+            "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16",
+            "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23",
+            "2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29", "2026-10-30",
+            "2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05", "2026-11-06"
+        ];
+
+        function getDaysInMonth(y, m) { 
+            return new Date(y, m + 1, 0).getDate(); 
+        }
+        
+        function getStartOffset(y, m) { 
+            const d = new Date(y, m, 1).getDay(); 
+            return d === 0 ? 6 : d - 1; 
+        }
+
+        function formatDate(y, m, d) { 
+            return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`; 
+        }
+
+        function getPackageClass(dateStr) {
+            if (anastasiaPackageDays.includes(dateStr)) return "pkg-anastasia";
+            return null;
+        }
+
+        function isAnastasiaLesson(dateStr, dateObj) {
+            const dayOfWeek = dateObj.getDay(); // 2 = Tuesday, 5 = Friday
+            if (dayOfWeek !== 2 && dayOfWeek !== 5) return false;
+            return getPackageClass(dateStr) !== null;
+        }
+
+        function getCellClasses(dateStr, y, m, d) {
+            const dateObj = new Date(y, m, d);
+            const isWeekend = (dateObj.getDay() === 0 || dateObj.getDay() === 6);
+            let classes = [];
+            const pkgClass = getPackageClass(dateStr);
+            
+            if (pkgClass) classes.push(pkgClass);
+            else if (isWeekend) classes.push("weekend");
+            
+            if (isAnastasiaLesson(dateStr, dateObj)) {
+                classes.push("anastasia-lesson");
+            }
+            return classes.join(" ");
+        }
+
+        function renderCalendar() {
+            const container = document.getElementById("calendarGrid");
+            container.innerHTML = "";
+            
+            for (let m = 0; m < 12; m++) {
+                const daysInMonth = getDaysInMonth(year, m);
+                const startOffset = getStartOffset(year, m);
+                const totalCells = Math.ceil((startOffset + daysInMonth) / 7) * 7;
+                
+                let cardHtml = `
+                <div class="bg-white/90 backdrop-blur rounded-2xl border border-teal-100 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden flex flex-col">
+                    <div class="bg-teal-50 text-teal-900 text-center py-2.5 px-4 font-bold text-base tracking-wide flex items-center justify-between border-b border-teal-100">
+                        <span>${months[m]}</span>
+                        <span class="text-xs text-teal-600 font-normal">2026</span>
+                    </div>
+                    <div class="p-3 flex-1 flex flex-col justify-center">
+                        <table class="w-full border-separate border-spacing-1 text-center">
+                            <thead>
+                                <tr>`;
+                
+                for (let w of weekDays) {
+                    const isW = (w === "Сб" || w === "Вс");
+                    cardHtml += `<th class="py-1 text-[11px] font-bold ${isW ? 'text-rose-500' : 'text-teal-700/60'} uppercase">${w}</th>`;
+                }
+                
+                cardHtml += `</tr></thead><tbody>`;
+                
+                let day = 1;
+                for (let i = 0; i < totalCells; i++) {
+                    if (i % 7 === 0) cardHtml += "<tr>";
+                    
+                    if (i >= startOffset && day <= daysInMonth) {
+                        const dateStr = formatDate(year, m, day);
+                        const cls = getCellClasses(dateStr, year, m, day);
+                        cardHtml += `<td class="h-8 w-8 text-xs rounded-lg font-semibold transition-transform duration-150 align-middle ${cls}" title="${dateStr}">${day}</td>`;
+                        day++;
+                    } else {
+                        const prevMonth = m === 0 ? 11 : m - 1;
+                        const prevYear = m === 0 ? year - 1 : year;
+                        const prevMonthDays = getDaysInMonth(prevYear, prevMonth);
+                        let prevDay = prevMonthDays - (startOffset - i - 1);
+                        if (prevDay <= 0) {
+                            const prevPrevMonth = prevMonth === 0 ? 11 : prevMonth - 1;
+                            const prevPrevMonthDays = getDaysInMonth(prevMonth === 0 ? year - 1 : year, prevPrevMonth);
+                            prevDay = prevPrevMonthDays + prevDay;
+                        }
+                        cardHtml += `<td class="h-8 w-8 text-xs rounded-lg other-month align-middle">${prevDay}</td>`;
+                    }
+                    
+                    if (i % 7 === 6) cardHtml += "</tr>";
+                }
+                
+                cardHtml += `</tbody></table></div></div>`;
+                container.innerHTML += cardHtml;
+            }
+        }
+
+        window.onload = renderCalendar;
+    </script>
+</body>
+</html>
