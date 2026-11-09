@@ -21,8 +21,10 @@
     </script>
     <style>
         :root {
-            --pkg-anastasia-bg: #ccfbf1; /* Soft Turquoise / Teal theme */
-            --pkg-anastasia-text: #0f766e; 
+            --pkg-anastasia-bg: #ccfbf1;
+            --pkg-anastasia-text: #0f766e;
+            --pkg-anastasia-2-bg: #fce7f3;
+            --pkg-anastasia-2-text: #9d174d;
         }
         body {
             background: linear-gradient(135deg, #f0fdf4 0%, #e0f2fe 100%);
@@ -34,6 +36,11 @@
             color: var(--pkg-anastasia-text); 
             font-weight: 700; 
         }
+        .pkg-anastasia-2 { 
+            background-color: var(--pkg-anastasia-2-bg); 
+            color: var(--pkg-anastasia-2-text); 
+            font-weight: 700; 
+        }
         .weekend {
             background-color: #fff1f2;
             color: #e11d48;
@@ -42,7 +49,6 @@
             color: #94a3b8;
             font-weight: 400;
         }
-        /* Anastasia's exact lesson indicator (Tuesday & Friday) */
         .anastasia-lesson {
             box-shadow: inset 0 0 0 2px #0d9488;
             font-weight: 800 !important;
@@ -56,6 +62,21 @@
             width: 5px;
             height: 5px;
             background-color: #0d9488;
+            border-radius: 50%;
+        }
+        .anastasia-lesson-2 {
+            box-shadow: inset 0 0 0 2px #db2777;
+            font-weight: 800 !important;
+            position: relative;
+        }
+        .anastasia-lesson-2::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            width: 5px;
+            height: 5px;
+            background-color: #db2777;
             border-radius: 50%;
         }
     </style>
@@ -83,12 +104,21 @@
         const months = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
         const weekDays = ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
 
-        // Package Anastasia: Oct 13 -> Nov 6 (20 calendar days duration, 8 lessons on Tue & Fri)
+        // Пакет 1: 13 октября – 6 ноября (20 рабочих дней)
         const anastasiaPackageDays = [
             "2026-10-13", "2026-10-14", "2026-10-15", "2026-10-16",
             "2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23",
             "2026-10-26", "2026-10-27", "2026-10-28", "2026-10-29", "2026-10-30",
             "2026-11-02", "2026-11-03", "2026-11-04", "2026-11-05", "2026-11-06"
+        ];
+
+        // Пакет 2: 10 ноября – 7 декабря (20 рабочих дней)
+        const anastasiaPackage2Days = [
+            "2026-11-10","2026-11-11","2026-11-12","2026-11-13",
+            "2026-11-16","2026-11-17","2026-11-18","2026-11-19","2026-11-20",
+            "2026-11-23","2026-11-24","2026-11-25","2026-11-26","2026-11-27",
+            "2026-11-30","2026-12-01","2026-12-02","2026-12-03","2026-12-04",
+            "2026-12-07"
         ];
 
         function getDaysInMonth(y, m) { 
@@ -106,6 +136,7 @@
 
         function getPackageClass(dateStr) {
             if (anastasiaPackageDays.includes(dateStr)) return "pkg-anastasia";
+            if (anastasiaPackage2Days.includes(dateStr)) return "pkg-anastasia-2";
             return null;
         }
 
@@ -125,7 +156,8 @@
             else if (isWeekend) classes.push("weekend");
             
             if (isAnastasiaLesson(dateStr, dateObj)) {
-                classes.push("anastasia-lesson");
+                if (pkgClass === "pkg-anastasia") classes.push("anastasia-lesson");
+                else if (pkgClass === "pkg-anastasia-2") classes.push("anastasia-lesson-2");
             }
             return classes.join(" ");
         }
